@@ -15,7 +15,11 @@ export function useTasks() {
     try {
       const storedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
+        const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+          ...task,
+          createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+        }));
+        setTasks(parsedTasks);
       }
     } catch (error) {
       console.error("Error reading from localStorage", error);
@@ -48,7 +52,7 @@ export function useTasks() {
       id: crypto.randomUUID(),
       text,
       completed: false,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
     setTasks(prevTasks => [newTask, ...prevTasks]);
   };
