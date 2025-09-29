@@ -12,6 +12,20 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
+  let formattedDate = '';
+  try {
+    // Attempt to format the date, but don't crash if it's invalid.
+    if (task.createdAt) {
+      const taskDate = new Date(task.createdAt);
+      if (!isNaN(taskDate.getTime())) {
+        formattedDate = format(taskDate, "MMM d, yyyy 'at' h:mm a");
+      }
+    }
+  } catch (e) {
+    console.error('Could not format date:', task.createdAt, e);
+    // formattedDate remains empty, so nothing will be rendered for the date.
+  }
+
   return (
     <li className={cn(
         "flex items-center gap-4 p-3 rounded-lg transition-all duration-300",
@@ -34,12 +48,14 @@ export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
         >
           {task.text}
         </label>
-        <p className={cn(
-            "text-xs",
-            task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
-          )}>
-          {format(new Date(task.createdAt), "MMM d, yyyy 'at' h:mm a")}
-        </p>
+        {formattedDate && (
+          <p className={cn(
+              "text-xs",
+              task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
+            )}>
+            {formattedDate}
+          </p>
+        )}
       </div>
       <Button
         variant="ghost"
