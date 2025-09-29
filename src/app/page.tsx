@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-import * as htmlToImage from 'html-to-image';
+import { useRef, useEffect } from "react";
 import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
 import { useTasks } from "@/hooks/useTasks";
@@ -9,15 +8,25 @@ import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
-import { toPng } from 'html-to-image';
+
+// Dynamically import toPng to ensure it's only on the client
+const toPng = (node: HTMLElement, options?: any) => 
+  import('html-to-image').then(({ toPng }) => toPng(node, options));
 
 export default function Home() {
   const { tasks, addTask, toggleTask, deleteTask, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
+  
+  // This effect will only run on the client, after the component has mounted.
+  useEffect(() => {
+    // Client-side only logic can go here.
+  }, []);
+
 
   const getFontEmbedCSS = async () => {
     const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
     try {
+      // This fetch is safe because handleShare is only called on client interaction.
       const response = await fetch(fontUrl);
       const cssText = await response.text();
       
@@ -51,6 +60,13 @@ export default function Home() {
     if (listRef.current === null) {
       return;
     }
+
+    const scrollArea = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
+    const originalHeight = scrollArea ? scrollArea.style.height : '';
+
+    if (scrollArea) {
+      scrollArea.style.height = 'auto';
+    }
     
     try {
       const fontEmbedCSS = await getFontEmbedCSS();
@@ -64,6 +80,10 @@ export default function Home() {
       link.click();
     } catch (err) {
       console.error('oops, something went wrong!', err);
+    } finally {
+      if (scrollArea) {
+        scrollArea.style.height = originalHeight;
+      }
     }
   };
 
