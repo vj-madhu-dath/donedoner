@@ -3,6 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface TaskItemProps {
   task: Task;
@@ -11,6 +12,8 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
+  const taskDate = new Date(task.createdAt);
+  
   return (
     <li className={cn(
         "flex items-center gap-4 p-3 rounded-lg transition-all duration-300",
@@ -23,15 +26,23 @@ export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
         aria-label={`Mark task ${task.text} as ${task.completed ? 'not done' : 'done'}`}
         className="h-5 w-5"
       />
-      <label
-        htmlFor={`task-${task.id}`}
-        className={cn(
-          "flex-grow cursor-pointer transition-all duration-300",
-          task.completed ? "line-through text-muted-foreground" : "text-card-foreground"
-        )}
-      >
-        {task.text}
-      </label>
+      <div className="flex-grow">
+        <label
+          htmlFor={`task-${task.id}`}
+          className={cn(
+            "cursor-pointer transition-all duration-300",
+            task.completed ? "line-through text-muted-foreground" : "text-card-foreground"
+          )}
+        >
+          {task.text}
+        </label>
+        <p className={cn(
+            "text-xs",
+            task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
+          )}>
+          {format(taskDate, "MMM d, yyyy 'at' h:mm a")}
+        </p>
+      </div>
       <Button
         variant="ghost"
         size="icon"

@@ -48,6 +48,7 @@ export function useTasks() {
       id: crypto.randomUUID(),
       text,
       completed: false,
+      createdAt: new Date().toISOString(),
     };
     setTasks(prevTasks => [newTask, ...prevTasks]);
   };
