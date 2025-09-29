@@ -9,10 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 
-// Dynamically import toPng to ensure it's only on the client
-const toPng = (node: HTMLElement, options?: any) => 
-  import('html-to-image').then(({ toPng }) => toPng(node, options));
-
 export default function Home() {
   const { tasks, addTask, toggleTask, deleteTask, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
@@ -60,6 +56,9 @@ export default function Home() {
     if (listRef.current === null) {
       return;
     }
+    
+    // Dynamically import toPng to ensure it's only on the client
+    const { toPng } = await import('html-to-image');
 
     const scrollArea = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
     const originalHeight = scrollArea ? scrollArea.style.height : '';
