@@ -38,7 +38,7 @@ export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
             "text-xs",
             task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
           )}>
-          {format(task.createdAt, "MMM d, yyyy 'at' h:mm a")}
+          {format(new Date(task.createdAt), "MMM d, yyyy 'at' h:mm a")}
         </p>
       </div>
       <Button
