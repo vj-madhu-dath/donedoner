@@ -3,7 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 
 interface TaskItemProps {
   task: Task;
@@ -40,7 +40,7 @@ export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
             "text-xs",
             task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
           )}>
-          {format(taskDate, "MMM d, yyyy 'at' h:mm a")}
+          {isValid(taskDate) ? format(taskDate, "MMM d, yyyy 'at' h:mm a") : 'Invalid date'}
         </p>
       </div>
       <Button
