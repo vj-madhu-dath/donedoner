@@ -2,14 +2,12 @@
 
 import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
-import { AISuggestion } from "@/components/AISuggestion";
 import { useTasks } from "@/hooks/useTasks";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const { tasks, addTask, toggleTask, deleteTask, isLoaded, getSuggestion, suggestedTask, loadingSuggestion } = useTasks();
+  const { tasks, addTask, toggleTask, deleteTask, isLoaded } = useTasks();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
@@ -35,12 +33,6 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-        
-        <AISuggestion 
-          onGetSuggestion={getSuggestion} 
-          suggestedTask={suggestedTask} 
-          loading={loadingSuggestion}
-        />
       </main>
 
       <footer className="text-center text-muted-foreground text-sm mt-16 pb-8">
