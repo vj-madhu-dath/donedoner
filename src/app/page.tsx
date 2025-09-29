@@ -56,22 +56,30 @@ export default function Home() {
     if (listRef.current === null) {
       return;
     }
-    
+
     // Dynamically import toPng to ensure it's only on the client
     const { toPng } = await import('html-to-image');
 
-    const scrollArea = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
-    const originalHeight = scrollArea ? scrollArea.style.height : '';
+    const scrollContainer = listRef.current.querySelector('[data-radix-scroll-area-root]');
+    const scrollViewport = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
 
-    if (scrollArea) {
-      scrollArea.style.height = 'auto';
+    let originalContainerHeight = '';
+    let originalViewportHeight = '';
+
+    if (scrollContainer instanceof HTMLElement) {
+      originalContainerHeight = scrollContainer.style.height;
+      scrollContainer.style.height = 'auto';
     }
-    
+    if (scrollViewport) {
+      originalViewportHeight = scrollViewport.style.height;
+      scrollViewport.style.height = 'auto';
+    }
+
     try {
       const fontEmbedCSS = await getFontEmbedCSS();
-      const dataUrl = await toPng(listRef.current, { 
+      const dataUrl = await toPng(listRef.current, {
         cacheBust: true,
-        fontEmbedCSS: fontEmbedCSS
+        fontEmbedCSS: fontEmbedCSS,
       });
       const link = document.createElement('a');
       link.download = 'donedoer-list.png';
@@ -80,8 +88,11 @@ export default function Home() {
     } catch (err) {
       console.error('oops, something went wrong!', err);
     } finally {
-      if (scrollArea) {
-        scrollArea.style.height = originalHeight;
+      if (scrollContainer instanceof HTMLElement) {
+        scrollContainer.style.height = originalContainerHeight;
+      }
+      if (scrollViewport) {
+        scrollViewport.style.height = originalViewportHeight;
       }
     }
   };

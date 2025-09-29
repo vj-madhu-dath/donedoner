@@ -19,7 +19,7 @@ export function TaskList({ tasks, onToggleTask, onDeleteTask }: TaskListProps) {
   }
 
   return (
-    <ScrollArea className="h-[40vh] pr-4 -mr-4">
+    <ScrollArea className="h-[40vh] pr-4 -mr-4" data-radix-scroll-area-root>
       <ul className="space-y-3">
         {tasks.map(task => (
           <TaskItem
