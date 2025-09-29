@@ -9,26 +9,62 @@ import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
+import { toPng } from 'html-to-image';
 
 export default function Home() {
   const { tasks, addTask, toggleTask, deleteTask, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
 
-  const handleShare = () => {
+  const getFontEmbedCSS = async () => {
+    const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
+    try {
+      const response = await fetch(fontUrl);
+      const cssText = await response.text();
+      
+      const fontFaces = await Promise.all(
+        cssText.split('@font-face').slice(1).map(async (rule) => {
+          const urlMatch = rule.match(/url\((https?:\/\/[^)]+)\)/);
+          if (!urlMatch) return `@font-face {${rule}}`;
+
+          const fontUrl = urlMatch[1];
+          try {
+            const fontResponse = await fetch(fontUrl);
+            const fontBuffer = await fontResponse.arrayBuffer();
+            const base64Font = btoa(String.fromCharCode(...new Uint8Array(fontBuffer)));
+            const mimeType = fontResponse.headers.get('content-type') || 'font/woff2';
+            
+            return `@font-face {${rule.replace(urlMatch[0], `url("data:${mimeType};base64,${base64Font}")`)}}`;
+          } catch (e) {
+            console.error('Failed to fetch font resource:', e);
+            return `@font-face {${rule}}`; // Fallback to original rule
+          }
+        })
+      );
+      return fontFaces.join('\n');
+    } catch (e) {
+      console.error('Failed to fetch font stylesheet:', e);
+      return '';
+    }
+  };
+
+  const handleShare = async () => {
     if (listRef.current === null) {
       return;
     }
-
-    htmlToImage.toPng(listRef.current, { cacheBust: true })
-      .then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = 'donedoer-list.png';
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => {
-        console.error('oops, something went wrong!', err);
+    
+    try {
+      const fontEmbedCSS = await getFontEmbedCSS();
+      const dataUrl = await toPng(listRef.current, { 
+        cacheBust: true,
+        fontEmbedCSS: fontEmbedCSS
       });
+      const link = document.createElement('a');
+      link.download = 'donedoer-list.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('oops, something went wrong!', err);
+    }
   };
 
   return (
