@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { Task } from '@/types';
 import { useToast } from './use-toast';
 
-const LOCAL_STORAGE_KEY = 'donedoer-tasks';
+const LOCAL_STORAGE_KEY = 'donedoner-tasks';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);

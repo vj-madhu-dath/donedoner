@@ -12,13 +12,13 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
-  let formattedDate = '';
+  let formattedTime = '';
   if (task.createdAt && typeof task.createdAt.getMonth === 'function') {
     try {
-      formattedDate = format(task.createdAt, "MMM d, yyyy 'at' h:mm a");
+      formattedTime = format(task.createdAt, "h:mm a");
     } catch (e) {
-      console.error('Could not format date:', task.createdAt, e);
-      // formattedDate remains empty, so nothing will be rendered for the date.
+      console.error('Could not format time:', task.createdAt, e);
+      // formattedTime remains empty, so nothing will be rendered for the time.
     }
   }
 
@@ -45,12 +45,12 @@ export function TaskItem({ task, onToggleTask, onDeleteTask }: TaskItemProps) {
         >
           {task.text}
         </label>
-        {formattedDate && (
+        {formattedTime && (
           <p className={cn(
               "text-xs",
               task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
             )}>
-            {formattedDate}
+            {formattedTime}
           </p>
         )}
       </div>
