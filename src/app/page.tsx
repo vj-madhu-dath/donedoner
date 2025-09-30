@@ -85,7 +85,7 @@ export default function Home() {
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'yyyy-MM-dd');
-      link.download = `donedoner-list-${dateString}.png`;
+      link.download = `Done On ${dateString}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
