@@ -20,44 +20,42 @@ export default function Home() {
     // Client-side only logic can go here.
   }, []);
 
-
-  const getFontEmbedCSS = async () => {
-    const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
-    try {
-      // This fetch is safe because handleShare is only called on client interaction.
-      const response = await fetch(fontUrl);
-      const cssText = await response.text();
-      
-      const fontFaces = await Promise.all(
-        cssText.split('@font-face').slice(1).map(async (rule) => {
-          const urlMatch = rule.match(/url\((https?:\/\/[^)]+)\)/);
-          if (!urlMatch) return `@font-face {${rule}}`;
-
-          const fontUrl = urlMatch[1];
-          try {
-            const fontResponse = await fetch(fontUrl);
-            const fontBuffer = await fontResponse.arrayBuffer();
-            const base64Font = btoa(String.fromCharCode(...new Uint8Array(fontBuffer)));
-            const mimeType = fontResponse.headers.get('content-type') || 'font/woff2';
-            
-            return `@font-face {${rule.replace(urlMatch[0], `url("data:${mimeType};base64,${base64Font}")`)}}`;
-          } catch (e) {
-            console.error('Failed to fetch font resource:', e);
-            return `@font-face {${rule}}`; // Fallback to original rule
-          }
-        })
-      );
-      return fontFaces.join('\n');
-    } catch (e) {
-      console.error('Failed to fetch font stylesheet:', e);
-      return '';
-    }
-  };
-
   const handleShare = async () => {
     if (listRef.current === null) {
       return;
     }
+
+    const getFontEmbedCSS = async () => {
+      const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
+      try {
+        const response = await fetch(fontUrl);
+        const cssText = await response.text();
+        
+        const fontFaces = await Promise.all(
+          cssText.split('@font-face').slice(1).map(async (rule) => {
+            const urlMatch = rule.match(/url\((https?:\/\/[^)]+)\)/);
+            if (!urlMatch) return `@font-face {${rule}}`;
+
+            const fontUrl = urlMatch[1];
+            try {
+              const fontResponse = await fetch(fontUrl);
+              const fontBuffer = await fontResponse.arrayBuffer();
+              const base64Font = btoa(String.fromCharCode(...new Uint8Array(fontBuffer)));
+              const mimeType = fontResponse.headers.get('content-type') || 'font/woff2';
+              
+              return `@font-face {${rule.replace(urlMatch[0], `url("data:${mimeType};base64,${base64Font}")`)}}`;
+            } catch (e) {
+              console.error('Failed to fetch font resource:', e);
+              return `@font-face {${rule}}`; // Fallback to original rule
+            }
+          })
+        );
+        return fontFaces.join('\n');
+      } catch (e) {
+        console.error('Failed to fetch font stylesheet:', e);
+        return '';
+      }
+    };
 
     // Dynamically import toPng to ensure it's only on the client
     const { toPng } = await import('html-to-image');

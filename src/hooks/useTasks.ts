@@ -51,7 +51,7 @@ export function useTasks() {
     const newTask: Task = {
       id: crypto.randomUUID(),
       text,
-      completed: false,
+      completed: true,
       createdAt: new Date(),
     };
     setTasks(prevTasks => [newTask, ...prevTasks]);
