@@ -90,14 +90,27 @@ export default function Home() {
 
     try {
       const fontEmbedCSS = await getFontEmbedCSS();
-      const dataUrl = await toPng(listRef.current, {
+      
+      // Create a wrapper div to add padding without cutting off content
+      const wrapper = document.createElement('div');
+      wrapper.style.padding = '2rem';
+      wrapper.style.backgroundColor = 'hsl(240 10% 3.9%)';
+      wrapper.style.display = 'inline-block';
+      
+      // Clone the content
+      const clone = listRef.current.cloneNode(true) as HTMLElement;
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+      
+      const dataUrl = await toPng(wrapper, {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
         backgroundColor: 'hsl(240 10% 3.9%)',
-        style: {
-          padding: '2rem',
-        }
       });
+      
+      // Clean up the wrapper
+      document.body.removeChild(wrapper);
+      
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
       link.download = `${dateString}.png`;
