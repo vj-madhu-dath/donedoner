@@ -91,7 +91,10 @@ export default function Home() {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
         // The card background color in dark mode
-        backgroundColor: 'hsl(240 10% 10%)',
+        backgroundColor: 'hsl(240 10% 3.9%)',
+        style: {
+          padding: '2rem',
+        }
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
@@ -112,61 +115,63 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
-      <header className="text-center mb-8">
-        <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
-        <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
-      </header>
-
       <main className="w-full max-w-2xl space-y-8">
-        <Card className="shadow-lg border-none overflow-hidden">
-           <div ref={listRef} className={cn("bg-card text-card-foreground")}>
-            <CardHeader>
-              <TaskInput onAddTask={addTask} />
-            </CardHeader>
-            <CardContent>
-              {isLoaded ? (
-                <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
-              ) : (
-                <div className="space-y-3">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              )}
-            </CardContent>
-          </div>
-          {tasks.length > 0 && (
-            <CardFooter className="flex justify-between gap-2">
-              <Button variant="outline" onClick={handleShare} className="w-full">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share as PNG
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="w-full">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete all
-                      your tasks.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={clearTasks}>
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardFooter>
-          )}
-        </Card>
+        <div ref={listRef} className="space-y-8">
+            <header className="text-center">
+                <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
+                <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
+            </header>
+            <Card className="shadow-lg border-none overflow-hidden bg-card text-card-foreground">
+                <CardHeader>
+                <TaskInput onAddTask={addTask} />
+                </CardHeader>
+                <CardContent>
+                {isLoaded ? (
+                    <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
+                ) : (
+                    <div className="space-y-3">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    </div>
+                )}
+                </CardContent>
+            </Card>
+        </div>
+
+        {tasks.length > 0 && (
+            <Card className="shadow-lg border-none overflow-hidden">
+                <CardFooter className="flex justify-between gap-2 p-6">
+                    <Button variant="outline" onClick={handleShare} className="w-full">
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Share as PNG
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete All
+                        </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete all
+                            your tasks.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={clearTasks}>
+                            Continue
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardFooter>
+            </Card>
+        )}
       </main>
 
       <footer className="text-center text-muted-foreground text-sm mt-16 pb-8">
