@@ -82,7 +82,7 @@ export default function Home() {
         fontEmbedCSS: fontEmbedCSS,
       });
       const link = document.createElement('a');
-      const dateString = format(new Date(), 'yyyy-MM-dd');
+      const dateString = format(new Date(), 'MMMM d');
       link.download = `Done On ${dateString}.png`;
       link.href = dataUrl;
       link.click();
