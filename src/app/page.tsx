@@ -21,6 +21,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { toPng } from 'html-to-image';
+
 
 export default function Home() {
   const { tasks, addTask, toggleTask, deleteTask, clearTasks, isLoaded } = useTasks();
@@ -34,8 +36,6 @@ export default function Home() {
     if (listRef.current === null) {
       return;
     }
-    
-    const { toPng } = await import('html-to-image');
     
     const getFontEmbedCSS = async () => {
       const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
@@ -115,7 +115,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
       <main className="w-full max-w-2xl space-y-8">
-        <div ref={listRef} className="space-y-8">
+        <div ref={listRef} className="space-y-8 w-full max-w-2xl">
             <header className="text-center">
                 <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
                 <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
