@@ -35,6 +35,9 @@ export default function Home() {
       return;
     }
 
+    // Dynamically import toPng to ensure it's only on the client
+    const { toPng } = await import('html-to-image');
+
     const getFontEmbedCSS = async () => {
       const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
       try {
@@ -67,8 +70,6 @@ export default function Home() {
       }
     };
 
-    // Dynamically import toPng to ensure it's only on the client
-    const { toPng } = await import('html-to-image');
 
     const scrollContainer = listRef.current.querySelector('[data-radix-scroll-area-root]');
     const scrollViewport = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
@@ -90,6 +91,10 @@ export default function Home() {
       const dataUrl = await toPng(listRef.current, {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
+        style: {
+            border: 'none', // We are capturing the inner div, so we remove the outer card's border during capture.
+            borderRadius: '0'
+        }
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
@@ -116,21 +121,23 @@ export default function Home() {
       </header>
 
       <main className="w-full max-w-2xl space-y-8">
-        <Card className="shadow-lg border-none" ref={listRef}>
-          <CardHeader>
-            <TaskInput onAddTask={addTask} />
-          </CardHeader>
-          <CardContent>
-            {isLoaded ? (
-              <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
-            ) : (
-              <div className="space-y-3">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            )}
-          </CardContent>
+        <Card className="shadow-lg border-none">
+          <div ref={listRef}>
+            <CardHeader>
+              <TaskInput onAddTask={addTask} />
+            </CardHeader>
+            <CardContent>
+              {isLoaded ? (
+                <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
+              ) : (
+                <div className="space-y-3">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              )}
+            </CardContent>
+          </div>
           {tasks.length > 0 && (
             <CardFooter className="flex justify-between gap-2">
               <Button variant="outline" onClick={handleShare} className="w-full">
