@@ -86,3 +86,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .hide-for-capture {
+    display: none !important;
+  }
+}
