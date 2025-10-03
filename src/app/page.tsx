@@ -20,12 +20,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { tasks, addTask, toggleTask, deleteTask, clearTasks, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
   
-  // This effect will only run on the client, after the component has mounted.
   useEffect(() => {
     // Client-side only logic can go here.
   }, []);
@@ -34,10 +34,9 @@ export default function Home() {
     if (listRef.current === null) {
       return;
     }
-
-    // Dynamically import toPng to ensure it's only on the client
+    
     const { toPng } = await import('html-to-image');
-
+    
     const getFontEmbedCSS = async () => {
       const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
       try {
@@ -91,10 +90,8 @@ export default function Home() {
       const dataUrl = await toPng(listRef.current, {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
-        style: {
-            border: 'none', // We are capturing the inner div, so we remove the outer card's border during capture.
-            borderRadius: '0'
-        }
+        // The card background color in dark mode
+        backgroundColor: 'hsl(240 10% 10%)',
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
@@ -121,8 +118,8 @@ export default function Home() {
       </header>
 
       <main className="w-full max-w-2xl space-y-8">
-        <Card className="shadow-lg border-none">
-          <div ref={listRef}>
+        <Card className="shadow-lg border-none overflow-hidden">
+           <div ref={listRef} className={cn("bg-card text-card-foreground")}>
             <CardHeader>
               <TaskInput onAddTask={addTask} />
             </CardHeader>
