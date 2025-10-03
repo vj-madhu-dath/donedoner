@@ -69,7 +69,6 @@ export default function Home() {
       }
     };
 
-
     const scrollContainer = listRef.current.querySelector('[data-radix-scroll-area-root]');
     const scrollViewport = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
 
@@ -85,12 +84,12 @@ export default function Home() {
       scrollViewport.style.height = 'auto';
     }
 
+
     try {
       const fontEmbedCSS = await getFontEmbedCSS();
       const dataUrl = await toPng(listRef.current, {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
-        // The card background color in dark mode
         backgroundColor: 'hsl(240 10% 3.9%)',
         style: {
           padding: '2rem',
@@ -104,7 +103,7 @@ export default function Home() {
     } catch (err) {
       console.error('oops, something went wrong!', err);
     } finally {
-      if (scrollContainer instanceof HTMLElement) {
+       if (scrollContainer instanceof HTMLElement) {
         scrollContainer.style.height = originalContainerHeight;
       }
       if (scrollViewport) {
