@@ -21,7 +21,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { toPng } from 'html-to-image';
 
 
 export default function Home() {
@@ -37,6 +36,8 @@ export default function Home() {
       return;
     }
     
+    const { toPng } = await import('html-to-image');
+
     const getFontEmbedCSS = async () => {
       const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
       try {
@@ -91,6 +92,7 @@ export default function Home() {
         cacheBust: true,
         fontEmbedCSS: fontEmbedCSS,
         backgroundColor: 'hsl(240 10% 3.9%)',
+        width: 672, // This is the pixel equivalent of max-w-2xl
         style: {
           padding: '2rem',
         }
@@ -115,25 +117,25 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
       <main className="w-full max-w-2xl space-y-8">
-        <div ref={listRef} className="space-y-8 w-full max-w-2xl">
+        <div ref={listRef} className="space-y-8 w-full">
             <header className="text-center">
                 <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
                 <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
             </header>
             <Card className="shadow-lg border-none overflow-hidden bg-card text-card-foreground">
                 <CardHeader>
-                <TaskInput onAddTask={addTask} />
+                    <TaskInput onAddTask={addTask} />
                 </CardHeader>
                 <CardContent>
-                {isLoaded ? (
-                    <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
-                ) : (
-                    <div className="space-y-3">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    </div>
-                )}
+                    {isLoaded ? (
+                        <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
+                    ) : (
+                        <div className="space-y-3">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
