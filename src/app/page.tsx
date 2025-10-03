@@ -93,7 +93,7 @@ export default function Home() {
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
-      link.download = `Done On ${dateString}.png`;
+      link.download = `${dateString}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
