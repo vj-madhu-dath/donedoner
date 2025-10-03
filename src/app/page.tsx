@@ -7,12 +7,22 @@ import { useTasks } from "@/hooks/useTasks";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
+import { Share2, Trash2 } from "lucide-react";
 import { format } from 'date-fns';
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Home() {
-  const { tasks, addTask, toggleTask, deleteTask, isLoaded } = useTasks();
+  const { tasks, addTask, toggleTask, deleteTask, clearTasks, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
   
   // This effect will only run on the client, after the component has mounted.
@@ -83,7 +93,7 @@ export default function Home() {
       });
       const link = document.createElement('a');
       const dateString = format(new Date(), 'MMMM d');
-      link.download = `${dateString}.png`;
+      link.download = `Done On ${dateString}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -122,11 +132,34 @@ export default function Home() {
             )}
           </CardContent>
           {tasks.length > 0 && (
-            <CardFooter>
+            <CardFooter className="flex justify-between gap-2">
               <Button variant="outline" onClick={handleShare} className="w-full">
                 <Share2 className="mr-2 h-4 w-4" />
                 Share as PNG
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete all
+                      your tasks.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearTasks}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardFooter>
           )}
         </Card>

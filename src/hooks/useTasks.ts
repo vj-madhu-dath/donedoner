@@ -17,7 +17,7 @@ export function useTasks() {
       if (storedTasks) {
         const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
           ...task,
-          createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+          createdAt: new Date(task.createdAt),
         }));
         setTasks(parsedTasks);
       }
@@ -69,5 +69,9 @@ export function useTasks() {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   };
 
-  return { tasks, addTask, toggleTask, deleteTask, isLoaded };
+  const clearTasks = () => {
+    setTasks([]);
+  };
+
+  return { tasks, addTask, toggleTask, deleteTask, clearTasks, isLoaded };
 }
