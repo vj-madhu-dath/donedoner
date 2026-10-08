@@ -7,7 +7,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Share2, Trash2 } from "lucide-react";
+import { Share2, Trash2, Download } from "lucide-react";
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -130,6 +130,39 @@ export default function Home() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (tasks.length === 0) {
+      return;
+    }
+
+    // Create CSV header
+    const headers = ['Task', 'Status', 'Created Date'];
+    
+    // Create CSV rows
+    const rows = tasks.map(task => [
+      `"${task.text.replace(/"/g, '""')}"`, // Escape quotes in task text
+      task.completed ? 'Completed' : 'Pending',
+      format(new Date(task.createdAt), 'yyyy-MM-dd HH:mm:ss')
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const dateString = format(new Date(), 'MMMM d');
+    link.download = `${dateString}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    
+    // Clean up
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
       <main ref={listRef} className="w-full max-w-2xl space-y-8">
@@ -156,14 +189,18 @@ export default function Home() {
 
         {tasks.length > 0 && (
             <Card className="shadow-lg border-none overflow-hidden hideable-for-capture">
-                <CardFooter className="flex justify-between gap-2 p-6">
-                    <Button variant="outline" onClick={handleShare} className="w-full">
+                <CardFooter className="flex justify-between gap-2 p-6 flex-wrap">
+                    <Button variant="outline" onClick={handleShare} className="flex-1 min-w-[120px]">
                         <Share2 className="mr-2 h-4 w-4" />
                         Share as PNG
                     </Button>
+                    <Button variant="outline" onClick={handleExportCSV} className="flex-1 min-w-[120px]">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export as CSV
+                    </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
+                        <Button variant="destructive" className="flex-1 min-w-[120px]">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete All
                         </Button>
