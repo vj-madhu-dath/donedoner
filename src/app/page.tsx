@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import Image from "next/image";
 import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
+import { UnorderedListEditor } from "@/components/UnorderedListEditor";
 import { useTasks } from "@/hooks/useTasks";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Home() {
-  const { tasks, addTask, toggleTask, deleteTask, clearTasks, isLoaded } = useTasks();
+  const { tasks, addTask, deleteTask, clearTasks, isLoaded } = useTasks();
   const listRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -164,65 +166,81 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4 pb-12">
+      {/* Collapsible Scratchpad Drawer Trigger */}
+      <div className="fixed top-5 left-5 z-40 sm:top-6 sm:left-6 hideable-for-capture">
+        <UnorderedListEditor />
+      </div>
+
       <main ref={listRef} className="w-full max-w-2xl space-y-8">
-        <header className="text-center">
+        <header className="text-center flex flex-col items-center">
+          <div className="flex items-center justify-center gap-3.5">
+            <Image
+              src="/logo.png"
+              alt="DoneDoner Logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-xl shadow-sm"
+              priority
+            />
             <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
-            <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
+          </div>
+          <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
         </header>
+
         <Card className="shadow-lg border-none overflow-hidden bg-card text-card-foreground">
-            <CardHeader>
-                <TaskInput onAddTask={addTask} />
-            </CardHeader>
-            <CardContent>
-                {isLoaded ? (
-                    <TaskList tasks={tasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
-                ) : (
-                    <div className="space-y-3">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    </div>
-                )}
-            </CardContent>
+          <CardHeader>
+            <TaskInput onAddTask={addTask} />
+          </CardHeader>
+          <CardContent>
+            {isLoaded ? (
+              <TaskList tasks={tasks} onDeleteTask={deleteTask} />
+            ) : (
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            )}
+          </CardContent>
         </Card>
 
         {tasks.length > 0 && (
-            <Card className="shadow-lg border-none overflow-hidden hideable-for-capture">
-                <CardFooter className="flex justify-between gap-2 p-6 flex-wrap">
-                    <Button variant="outline" onClick={handleShare} className="flex-1 min-w-[120px]">
-                        <Share2 className="mr-2 h-4 w-4" />
-                        Share as PNG
-                    </Button>
-                    <Button variant="outline" onClick={handleExportCSV} className="flex-1 min-w-[120px]">
-                        <Download className="mr-2 h-4 w-4" />
-                        Export as CSV
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="flex-1 min-w-[120px]">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete All
-                        </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete all
-                            your tasks.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={clearTasks}>
-                            Continue
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </CardFooter>
-            </Card>
+          <Card className="shadow-lg border-none overflow-hidden hideable-for-capture">
+            <CardFooter className="flex justify-between gap-2 p-6 flex-wrap">
+              <Button variant="outline" onClick={handleShare} className="flex-1 min-w-[120px]">
+                <Share2 className="mr-2 h-4 w-4" />
+                Share as PNG
+              </Button>
+              <Button variant="outline" onClick={handleExportCSV} className="flex-1 min-w-[120px]">
+                <Download className="mr-2 h-4 w-4" />
+                Export as CSV
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="flex-1 min-w-[120px]">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete all
+                      your tasks.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearTasks}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardFooter>
+          </Card>
         )}
       </main>
 
