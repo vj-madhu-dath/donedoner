@@ -3,8 +3,22 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'DoneDoner',
-  description: 'A simple app to track your accomplishments.',
+  metadataBase: new URL('https://donedoner.web.app'),
+  title: {
+    default: 'DoneDoner — keep a record of what you finish',
+    template: '%s | DoneDoner',
+  },
+  description:
+    'A quiet place to record completed tasks, keep a scratchpad, and notice what you got done. Your lists stay in this browser.',
+  applicationName: 'DoneDoner',
+  openGraph: {
+    type: 'website',
+    siteName: 'DoneDoner',
+    title: 'DoneDoner — keep a record of what you finish',
+    description:
+      'Record completed tasks, keep a scratchpad, and notice what you got done.',
+    url: '/',
+  },
 };
 
 export default function RootLayout({

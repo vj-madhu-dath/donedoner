@@ -1,252 +1,154 @@
-"use client";
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowDownRight, ArrowRight, Check } from 'lucide-react';
+import { SiteFrame } from '@/components/SiteChrome';
 
-import { useRef, useEffect } from "react";
-import Image from "next/image";
-import { TaskInput } from "@/components/TaskInput";
-import { TaskList } from "@/components/TaskList";
-import { UnorderedListEditor } from "@/components/UnorderedListEditor";
-import { useTasks } from "@/hooks/useTasks";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Share2, Trash2, Download } from "lucide-react";
-import { format } from 'date-fns';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+export const metadata: Metadata = {
+  title: 'A simple place to keep a done list',
+  description:
+    'Record the work you finished, keep a separate scratchpad, and take your list with you. DoneDoner saves your data in this browser.',
+  alternates: { canonical: '/' },
+};
+
+const features = [
+  {
+    number: '01',
+    title: 'Record what is finished',
+    body: 'Add a task after you have done it. The list is for noticing completed work, not collecting another set of reminders.',
+  },
+  {
+    number: '02',
+    title: 'Keep next thoughts separate',
+    body: 'Open the scratchpad for loose notes and quick bullets. It stays distinct from the things you have already completed.',
+  },
+  {
+    number: '03',
+    title: 'Keep a copy when you want one',
+    body: 'Export the task list as CSV or share a PNG snapshot. The app does not sync those entries to an account.',
+  },
+];
 
 export default function Home() {
-  const { tasks, addTask, deleteTask, clearTasks, isLoaded } = useTasks();
-  const listRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    // Client-side only logic can go here.
-  }, []);
-
-  const handleShare = async () => {
-    if (listRef.current === null) {
-      return;
-    }
-    
-    // Hide elements we don't want in the PNG
-    const elementsToHide = listRef.current.querySelectorAll('.hideable-for-capture');
-    elementsToHide.forEach(el => el.classList.add('hide-for-capture'));
-
-    const { toPng } = await import('html-to-image');
-
-    const getFontEmbedCSS = async () => {
-      const fontUrl = 'https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap';
-      try {
-        const response = await fetch(fontUrl);
-        const cssText = await response.text();
-        
-        const fontFaces = await Promise.all(
-          cssText.split('@font-face').slice(1).map(async (rule) => {
-            const urlMatch = rule.match(/url\((https?:\/\/[^)]+)\)/);
-            if (!urlMatch) return `@font-face {${rule}}`;
-
-            const fontUrl = urlMatch[1];
-            try {
-              const fontResponse = await fetch(fontUrl);
-              const fontBuffer = await fontResponse.arrayBuffer();
-              const base64Font = btoa(String.fromCharCode(...new Uint8Array(fontBuffer)));
-              const mimeType = fontResponse.headers.get('content-type') || 'font/woff2';
-              
-              return `@font-face {${rule.replace(urlMatch[0], `url("data:${mimeType};base64,${base64Font}")`)}}`;
-            } catch (e) {
-              console.error('Failed to fetch font resource:', e);
-              return `@font-face {${rule}}`; // Fallback to original rule
-            }
-          })
-        );
-        return fontFaces.join('\n');
-      } catch (e) {
-        console.error('Failed to fetch font stylesheet:', e);
-        return '';
-      }
-    };
-
-    const scrollContainer = listRef.current.querySelector('[data-radix-scroll-area-root]');
-    const scrollViewport = listRef.current.querySelector<HTMLDivElement>('[data-radix-scroll-area-viewport]');
-
-    let originalContainerHeight = '';
-    let originalViewportHeight = '';
-
-    if (scrollContainer instanceof HTMLElement) {
-      originalContainerHeight = scrollContainer.style.height;
-      scrollContainer.style.height = 'auto';
-    }
-    if (scrollViewport) {
-      originalViewportHeight = scrollViewport.style.height;
-      scrollViewport.style.height = 'auto';
-    }
-
-
-    try {
-      const fontEmbedCSS = await getFontEmbedCSS();
-      
-      // Create a wrapper div to add padding without cutting off content
-      const wrapper = document.createElement('div');
-      wrapper.style.padding = '2rem';
-      wrapper.style.backgroundColor = 'hsl(240 10% 3.9%)';
-      wrapper.style.display = 'inline-block';
-      
-      // Clone the content
-      const clone = listRef.current.cloneNode(true) as HTMLElement;
-      wrapper.appendChild(clone);
-      document.body.appendChild(wrapper);
-      
-      const dataUrl = await toPng(wrapper, {
-        cacheBust: true,
-        fontEmbedCSS: fontEmbedCSS,
-        backgroundColor: 'hsl(240 10% 3.9%)',
-      });
-      
-      // Clean up the wrapper
-      document.body.removeChild(wrapper);
-      
-      const link = document.createElement('a');
-      const dateString = format(new Date(), 'MMMM d');
-      link.download = `${dateString}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('oops, something went wrong!', err);
-    } finally {
-       if (scrollContainer instanceof HTMLElement) {
-        scrollContainer.style.height = originalContainerHeight;
-      }
-      if (scrollViewport) {
-        scrollViewport.style.height = originalViewportHeight;
-      }
-       // Show the elements again
-      elementsToHide.forEach(el => el.classList.remove('hide-for-capture'));
-    }
-  };
-
-  const handleExportCSV = () => {
-    if (tasks.length === 0) {
-      return;
-    }
-
-    // Create CSV header
-    const headers = ['Task', 'Status', 'Created Date'];
-    
-    // Create CSV rows
-    const rows = tasks.map(task => [
-      `"${task.text.replace(/"/g, '""')}"`, // Escape quotes in task text
-      task.completed ? 'Completed' : 'Pending',
-      format(new Date(task.createdAt), 'yyyy-MM-dd HH:mm:ss')
-    ]);
-
-    // Combine headers and rows
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-
-    // Create blob and download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const dateString = format(new Date(), 'MMMM d');
-    link.download = `${dateString}.csv`;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    
-    // Clean up
-    URL.revokeObjectURL(link.href);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 text-foreground flex flex-col items-center pt-8 sm:pt-16 px-4 pb-12">
-      {/* Collapsible Scratchpad Drawer Trigger */}
-      <div className="fixed top-5 left-5 z-40 sm:top-6 sm:left-6 hideable-for-capture">
-        <UnorderedListEditor />
-      </div>
-
-      <main ref={listRef} className="w-full max-w-2xl space-y-8">
-        <header className="text-center flex flex-col items-center">
-          <div className="flex items-center justify-center gap-3.5">
-            <Image
-              src="/logo.png"
-              alt="DoneDoner Logo"
-              width={48}
-              height={48}
-              className="h-12 w-12 rounded-xl shadow-sm"
-              priority
-            />
-            <h1 className="text-5xl font-bold font-headline text-foreground tracking-tight">DoneDoner</h1>
+    <SiteFrame>
+      <section className="relative isolate overflow-hidden border-b border-white/10">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -right-40 -top-48 h-[34rem] w-[34rem] rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="absolute -left-48 bottom-[-18rem] h-[36rem] w-[36rem] rounded-full bg-indigo-500/10 blur-3xl" />
+        </div>
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-28">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/20 bg-violet-200/[0.07] px-3 py-1.5 text-xs font-medium text-violet-100">
+              <Image src="/logo.png" alt="" width={18} height={18} className="rounded" />
+              A quieter kind of task list
+            </div>
+            <h1 className="mt-7 max-w-2xl text-5xl font-semibold leading-[1.06] tracking-tight text-white sm:text-6xl">
+              Keep a record of what you <span className="text-violet-200">finished.</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
+              DoneDoner is a small place to note completed work, keep a separate scratchpad,
+              and see the shape of your day without turning it into a score.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <Link
+                href="/app/"
+                data-link-type="cta"
+                className="inline-flex items-center gap-2 rounded-full bg-violet-200 px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-white"
+              >
+                Open DoneDoner <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+              <Link href="/guides/" data-link-type="contextual" className="inline-flex items-center gap-2 px-2 py-3 text-sm font-medium text-slate-300 hover:text-white">
+                Browse the guides <ArrowDownRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+            </div>
+            <p className="mt-5 text-sm text-slate-500">
+              No account. Your task list stays in this browser.
+            </p>
           </div>
-          <p className="text-muted-foreground mt-2">What have you accomplished today?</p>
-        </header>
 
-        <Card className="shadow-lg border-none overflow-hidden bg-card text-card-foreground">
-          <CardHeader>
-            <TaskInput onAddTask={addTask} />
-          </CardHeader>
-          <CardContent>
-            {isLoaded ? (
-              <TaskList tasks={tasks} onDeleteTask={deleteTask} />
-            ) : (
-              <div className="space-y-3">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+          <div className="mx-auto w-full max-w-md">
+            <div className="rounded-[1.75rem] border border-white/10 bg-[#10111a] p-5 shadow-2xl shadow-black/40 sm:p-7">
+              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-violet-200">An example list</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">A few things that moved</h2>
+                </div>
+                <span aria-hidden="true" className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">Today</span>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <ul className="mt-2 divide-y divide-white/[0.07]">
+                {[
+                  'Sent the first draft',
+                  'Sorted the notes from the call',
+                  'Took a proper lunch break',
+                ].map((task) => (
+                  <li key={task} className="flex items-center gap-3 py-4 text-sm text-slate-200">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-200/15 text-violet-100">
+                      <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                    </span>
+                    {task}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 rounded-2xl bg-white/[0.035] p-4">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">A note for later</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">Keep tomorrow’s first thought somewhere safe.</p>
+              </div>
+              <p className="mt-4 text-xs leading-5 text-slate-500">
+                A sample for illustration—not a real user’s list.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {tasks.length > 0 && (
-          <Card className="shadow-lg border-none overflow-hidden hideable-for-capture">
-            <CardFooter className="flex justify-between gap-2 p-6 flex-wrap">
-              <Button variant="outline" onClick={handleShare} className="flex-1 min-w-[120px]">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share as PNG
-              </Button>
-              <Button variant="outline" onClick={handleExportCSV} className="flex-1 min-w-[120px]">
-                <Download className="mr-2 h-4 w-4" />
-                Export as CSV
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="flex-1 min-w-[120px]">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete all
-                      your tasks.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={clearTasks}>
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardFooter>
-          </Card>
-        )}
-      </main>
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        <div className="max-w-2xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-200">Small on purpose</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            A done list, not another productivity system.
+          </h2>
+          <p className="mt-4 text-base leading-7 text-slate-400">
+            Add a line when something is complete. Use the scratchpad for everything still
+            taking shape. There are no streaks, rankings, or automatic suggestions to keep up with.
+          </p>
+        </div>
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {features.map((feature) => (
+            <article key={feature.number} className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 sm:p-7">
+              <p className="text-xs font-semibold tracking-[0.16em] text-violet-200">{feature.number}</p>
+              <h3 className="mt-5 text-xl font-semibold text-white">{feature.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-400">{feature.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <footer className="text-center text-muted-foreground text-sm mt-16 pb-8 hideable-for-capture">
-        <p>Built with ❤️ and a sense of accomplishment.</p>
-      </footer>
-    </div>
+      <section className="border-y border-white/10 bg-white/[0.025]">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:px-8 md:grid-cols-[1fr_auto] md:items-center md:py-16">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-200">Your browser, your list</p>
+            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">Made to work without an account.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
+              Tasks and scratchpad notes are saved in this browser’s local storage. They are
+              not synced between devices, so export the task list if you want a separate copy.
+            </p>
+          </div>
+          <Link href="/about/" data-link-type="contextual" className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100 hover:text-white">
+            Read how data is handled <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-16 text-center sm:px-8 sm:py-20">
+        <h2 className="text-3xl font-semibold tracking-tight text-white">Start with one line.</h2>
+        <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-slate-400">
+          Open your list and write down something you have already finished.
+        </p>
+        <Link href="/app/" data-link-type="cta" className="mt-7 inline-flex items-center gap-2 rounded-full bg-violet-200 px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-white">
+          Open the app <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
+      </section>
+    </SiteFrame>
   );
 }
